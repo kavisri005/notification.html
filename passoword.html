@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forgot Password</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  input, button { padding: 8px; margin: 5px 0; }
+  .message { margin-top: 10px; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h2>Forgot Password</h2>
+
+<label>Enter Email or Phone:</label><br>
+<input type="text" id="userInput" placeholder="Email or Phone"><br>
+<button onclick="requestReset()">Request Password Reset</button>
+
+<div class="message" id="message"></div>
+
+<script>
+// Function to generate random password (uppercase + lowercase only)
+function generateRandomPassword(length = 8) {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+}
+
+// Handle reset request
+function requestReset() {
+  const input = document.getElementById("userInput").value.trim();
+  const messageDiv = document.getElementById("message");
+
+  if (!input) {
+    messageDiv.innerText = "Please enter your email or phone number.";
+    messageDiv.style.color = "red";
+    return;
+  }
+
+  const lastRequest = localStorage.getItem("lastResetRequest");
+  const today = new Date().toDateString();
+
+  if (lastRequest === today) {
+    messageDiv.innerText = "You can request password reset only once a day.";
+    messageDiv.style.color = "red";
+    return;
+  }
+
+  // Save today's date to prevent multiple requests
+  localStorage.setItem("lastResetRequest", today);
+
+  // Generate new password
+  const newPassword = generateRandomPassword(10);
+
+  // Simulate sending reset link / password (in real app, send via backend)
+  messageDiv.innerHTML = `✅ Password reset successful!<br>Your new password: <b>${newPassword}</b>`;
+  messageDiv.style.color = "green";
+}
+</script>
+
+</body>
+</html>
+
