@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Public Space</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  .post-box { border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
+  .feed-item { border: 1px solid #ddd; padding: 10px; margin-top: 10px; }
+  .feed-item img, .feed-item video { max-width: 100%; height: auto; margin-top: 10px; }
+  .actions button { margin-right: 10px; }
+  .comment-box { margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<h2>Public Space</h2>
+<p id="friendStatus"></p>
+
+<div class="post-box">
+  <input type="file" id="mediaUpload" accept="image/*,video/*"><br><br>
+  <textarea id="postText" placeholder="Write something..." rows="3" style="width:100%;"></textarea><br><br>
+  <button id="postBtn">Post</button>
+</div>
+
+<div id="feed"></div>
+
+<script>
+
+let friendCount = 2; 
+let postsToday = 0;
+
+
+document.getElementById("friendStatus").innerText = `You have ${friendCount} friend(s).`;
+
+
+function canPost() {
+  if (friendCount === 0) return 0; 
+  if (friendCount <= 2) return friendCount; 
+  if (friendCount > 10) return Infinity; 
+  return 1; 
+
+
+document.getElementById("postBtn").addEventListener("click", () => {
+  let maxPosts = canPost();
+  
+  if (maxPosts === 0) {
+    alert("You cannot post without friends!");
+    return;
+  }
+  
+  if (postsToday >= maxPosts && maxPosts !== Infinity) {
+    alert(`You can only post ${maxPosts} time(s) today.`);
+    return;
+  }
+  
+  let text = document.getElementById("postText").value.trim();
+  let file = document.getElementById("mediaUpload").files[0];
+  
+  if (!text && !file) {
+    alert("Please write something or upload media.");
+    return;
+  }
+  
+  let postHTML = `<div class="feed-item">
+                    <p>${text}</p>`;
+  
+  if (file) {
+    let url = URL.createObjectURL(file);
+    if (file.type.startsWith("image")) {
+      postHTML += `<img src="${url}" alt="post image">`;
+    } else if (file.type.startsWith("video")) {
+      postHTML += `<video controls><source src="${url}" type="${file.type}"></video>`;
+    }
+  }
+  
+  postHTML += `<div class="actions">
+                 <button onclick="likePost(this)">👍 Like</button>
+                 <button onclick="commentPost(this)">💬 Comment</button>
+                 <button onclick="sharePost()">🔗 Share</button>
+               </div>
+               <div class="comment-box"></div>
+               </div>`;
+  
+  document.getElementById("feed").insertAdjacentHTML("afterbegin", postHTML);
+  
+  postsToday++;
+  document.getElementById("postText").value = "";
+  document.getElementById("mediaUpload").value = "";
+});
+
+
+function likePost(btn) {
+  let count = btn.dataset.likes ? parseInt(btn.dataset.likes) : 0;
+  count++;
+  btn.dataset.likes = count;
+  btn.innerText = `👍 Like (${count})`;
+}
+
+function commentPost(btn) {
+  let comment = prompt("Enter your comment:");
+  if (comment) {
+    let commentDiv = btn.parentElement.nextElementSibling;
+    commentDiv.innerHTML += `<p><strong>You:</strong> ${comment}</p>`;
+  }
+}
+
+function sharePost() {
+  alert("Post shared!");
+}
+</script>
+
+</body>
+</html>
