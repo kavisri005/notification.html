@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription</title>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <h2>Choose Your Subscription Plan</h2>
+
+    <form id="payment-form">
+        <select id="plan-select">
+            <option value="free">Free Plan</option>
+            <option value="bronze">Bronze Plan (₹100/month)</option>
+            <option value="silver">Silver Plan (₹300/month)</option>
+            <option value="gold">Gold Plan (₹1000/month)</option>
+        </select>
+
+        <div>
+            <label for="email">Email</label>
+            <input type="email" id="email" required>
+        </div>
+
+        <button type="submit" id="submit-button">Subscribe</button>
+    </form>
+
+    <script>
+        const stripe = Stripe('your-publishable-key');  // Replace with your Stripe publishable key
+        const paymentForm = document.getElementById('payment-form');
+        const submitButton = document.getElementById('submit-button');
+        
+        paymentForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const plan = document.getElementById('plan-select').value;
+
+            const response = await fetch('/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, plan })
+            });
+
+            const data = await response.json();
+            if (data.client_secret) {
+                const { error } = await stripe.confirmCardPayment(data.client_secret);
+                if (error) {
+                    alert('Payment failed: ' + error.message);
+                } else {
+                    alert('Payment succeeded!');
+                    await fetch('/confirm_payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ payment_intent_id: data.client_secret, email, plan })
+                    });
+                }
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    </script>
+</body>
+</html>
