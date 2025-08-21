@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ask Question - Video Upload</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<h2>Ask Question (Video Format)</h2>
+
+<div id="step1">
+  <label>Enter your Email: </label>
+  <input type="email" id="email" placeholder="Enter your email" required>
+  <button onclick="sendOTP()">Send OTP</button>
+</div>
+
+<div id="step2" class="hidden">
+  <label>Enter OTP: </label>
+  <input type="text" id="otpInput" placeholder="Enter OTP">
+  <button onclick="verifyOTP()">Verify OTP</button>
+</div>
+
+<div id="step3" class="hidden">
+  <input type="file" id="videoUpload" accept="video/*"><br><br>
+  <button onclick="uploadVideo()">Upload Video</button>
+</div>
+
+<script>
+let generatedOTP = "";
+let otpVerified = false;
+
+
+function sendOTP() {
+  let email = document.getElementById("email").value.trim();
+  if (!email) {
+    alert("Please enter an email address.");
+    return;
+  }
+  generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+  alert(`OTP sent to ${email} (Demo OTP: ${generatedOTP})`); // In real app, sent via email server
+  document.getElementById("step1").classList.add("hidden");
+  document.getElementById("step2").classList.remove("hidden");
+}
+
+
+function verifyOTP() {
+  let enteredOTP = document.getElementById("otpInput").value.trim();
+  if (enteredOTP === generatedOTP) {
+    otpVerified = true;
+    alert("OTP Verified! You can now upload video.");
+    document.getElementById("step2").classList.add("hidden");
+    document.getElementById("step3").classList.remove("hidden");
+  } else {
+    alert("Invalid OTP. Please try again.");
+  }
+}
+
+
+function uploadVideo() {
+  if (!otpVerified) {
+    alert("You must verify OTP before uploading.");
+    return;
+  }
+
+  let now = new Date();
+  let hour = now.getHours();
+  if (hour < 14 || hour >= 19) {
+    alert("You can only upload videos between 2:00 PM and 7:00 PM.");
+    return;
+  }
+
+  let file = document.getElementById("videoUpload").files[0];
+  if (!file) {
+    alert("Please select a video file.");
+    return;
+  }
+
+  
+  let maxSize = 50 * 1024 * 1024; // bytes
+  if (file.size > maxSize) {
+    alert("Video size exceeds 50 MB limit.");
+    return;
+  }
+
+  
+  let videoElement = document.createElement("video");
+  videoElement.preload = "metadata";
+  videoElement.onloadedmetadata = function () {
+    window.URL.revokeObjectURL(videoElement.src);
+    if (videoElement.duration > 120) {
+      alert("Video duration exceeds 2 minutes limit.");
+    } else {
+      alert("Video uploaded successfully!");
+      
+    }
+  };
+  videoElement.src = URL.createObjectURL(file);
+}
+</script>
+
+</body>
+</html>
